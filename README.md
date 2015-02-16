@@ -1,18 +1,14 @@
 
 In reference documentation frequently we need to explain a concept or
 convey an idea before going into details. This is similar to the way
-a presentation may provide additional background before getting to
-main point.
-
-Reference documentation however is a place to keep referring to over
-and over again so it needs to remain focused, factual, and complete.
-Inserting additional background and conveying ideas that only need to
-be conveyed once means readers have to scroll past it every time.
-More importantly such information most likely ends up as side notes
-or overviews where the thought of becoming long-winded limits our
-ability to adequately convey ideas. The problem is only multiplied
-with time as new writers consider where to add or expand on existing
-information.
+a presentation may provide additional background.
+Reference documentation however is used repeatedly so it needs to
+remain focused, factual, and complete. It is not a good place for
+conveying ideas that only need to be conveyed once. More importantly
+conceptual information most likely ends up in side notes and overviews
+where the topic is most likely not adequately covered. The problem
+is only multiplied with time as new writers consider where to add
+or expand on existing information.
 
 The purpose of this repository is to manage topical guides for Spring
 projects. The repository is shared across projects since ideas and
