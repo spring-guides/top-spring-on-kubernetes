@@ -10,10 +10,11 @@ where the topic is most likely not adequately covered. The problem
 is only multiplied with time as new writers consider where to add
 or expand on existing information.
 
-The purpose of this repository is to manage topical guides for Spring
-projects. The repository is shared across projects since ideas and
-topics, more so than a reference, most often apply across projects
-and remain valid across versions.
+A good solution is to create topical guides separate from reference
+documentation. The purpose of this repository is to hold such topical
+guides for Spring projects. The repository is shared across projects
+since ideas and topics, more so than a reference, most often apply
+across projects and remain valid across versions.
 
 Consider the following general guidelines:
 
