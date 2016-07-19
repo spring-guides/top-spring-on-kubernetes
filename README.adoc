@@ -1,3 +1,13 @@
+---
+tags: []
+projects: []
+---
+:toc:
+:icons: font
+:source-highlighter: prettify
+:project_id: draft-top-template
+
+= Topical Guides
 
 In reference documentation frequently we need to explain a concept or
 convey an idea before going into details. This is similar to the way
@@ -9,6 +19,8 @@ conceptual information most likely ends up in side notes and overviews
 where the topic is most likely not adequately covered. The problem
 is only multiplied with time as new authors consider where to add
 or expand on existing information.
+
+== Content Guidelines for Topical Guides
 
 A good solution is to create topical guides separate from reference
 documentation. The purpose of this repository is to hold such topical
@@ -23,7 +35,7 @@ Consider the following guidelines:
 * Use code samples to convey ideas, not to accomplish a task.
 * Think beyond individual projects.
 * Make few assumptions about prior knowledge.
-* Make it easy to follow and read in 10-15 min.
+* Make it easy to follow and read in 15-30 min.
 * Suited for phone or tablet with no IDE.
 
 A good topical guide is like a Youtube intro video, a lightning talk,
@@ -32,7 +44,27 @@ users to communicate concepts. The opening paragraph should identify
 the motivation for the guide, why it matters and who the target
 audience is.
 
-In relation to getting started guides, readers might first check out
-a topical guide to get oriented, then follow getting started guides
-to accomplish specific tasks.
+In relation to getting started guides, readers might first check out a
+topical guide to get oriented, then follow getting started guides to
+accomplish specific tasks. Or they might start with a getting started
+guide and find that they need more colour on a specific topic, to
+understand how the code in the guide actually works, or can be
+customized.
 
+== How to Create a new Guide
+
+Clone this https://github.com/spring-guides/topical-guides[repository]
+and edit the README to contain the content of your guide. Currently we
+can only support guides in Asciidoctor[http://asciidoctor.org/] but
+Markdown[https://guides.github.com/features/mastering-markdown/]
+support is planned. Add images, code, etc. directly in your fork. You
+are encouraged to use advanced features of Asciidoctor if you need
+them (like includes, admonitions, etc.) If you use relative paths you
+should get a good idea of how it will render by simply browsing your
+fork in Github. If you use absolute paths for includes, they will be
+processed in the final markup on the website, but Github will not
+render them for you.
+
+When your content is ready for review, send a pull request and explain
+why the topic is needed and how it fits in with other guides if there
+are any that are relevant.
