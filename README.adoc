@@ -51,6 +51,21 @@ guide and find that they need more colour on a specific topic, to
 understand how the code in the guide actually works, or can be
 customized.
 
+== Metadata
+
+Each guide has an id, title and description that allow it to be
+located in the main website. The id is the project name with the
+"top-" prefix stripped off. The title and description are scraped from the github repository description in the form `<title>::<description>`. Look at some existing guides to see how that works, e.g. https://github.com/spring-guides/top-spring-security-architecture[Spring Security Architecture].
+
+In addition, a guide can have tags, and related projects. A tag is an
+arbitrary word (like "security"). A related project is a Spring
+project ID from the website (e.g. "spring-framework" or
+"spring-cloud-netflix"). You can specify these forms of metadata in a
+special header in the form of a YAML document (like with Jekyll). See
+the top of the source code for this page for an example.
+
+You should probably also add `:toc:` at the top of your document, to ensure that a table of contents is rendered.
+
 == How to Create a new Guide
 
 Clone this https://github.com/spring-guides/topical-guides[repository]
