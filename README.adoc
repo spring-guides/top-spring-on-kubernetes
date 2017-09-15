@@ -51,6 +51,12 @@ guide and find that they need more colour on a specific topic, to
 understand how the code in the guide actually works, or can be
 customized.
 
+NOTE: there are also some micro-guides called
+https://github.com/spring-guides/understaning["understanding" guides]
+in `spring-guides`. These are really short, one or two paragraphs at
+most, and can easily be distinguished from topical guides by their
+length and limited scope.
+
 == Metadata
 
 Each guide has an id, title and description that allow it to be
