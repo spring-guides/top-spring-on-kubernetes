@@ -20,9 +20,13 @@ public class DemoApplication {
 
 	@GetMapping
 	public Mono<String> index() {
-		return webClient.get().uri("http://k8s-workshop-name-service").exchange().flatMap(clientResponse -> {
-			String host = clientResponse.headers().asHttpHeaders().get("k8s-host").get(0);
-			return clientResponse.bodyToMono(String.class).flatMap(name -> Mono.just("Hello " + name + " from " + host));
-		});
+		return webClient.get().uri("http://k8s-workshop-name-service")
+				.retrieve()
+				.toEntity(String.class)
+				.map(entity -> {
+					String host = entity.getHeaders().get("k8s-host").get(0);
+					return "Hello " + entity.getBody() + " from " + host;
+				});
+
 	}
 }
