@@ -296,9 +296,7 @@ Create a new file called `application.properties` in the `k8s` directory. In tha
 .application.properties
 [source,properties]
 ----
-server.shutdown=graceful
-
-management.endpoints.web.exposure.include=*
+include::app/k8s/application.properties[]
 ----
 
 Alternatively you can do this in one easy step from the command line by running the following command.
@@ -348,50 +346,7 @@ To do this, we need to modify our deployment YAML to first create the volume and
 .k8s/deployment.yaml
 [source,yaml]
 ----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    app: gs-spring-boot-k8s
-  name: gs-spring-boot-k8s
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: gs-spring-boot-k8s
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: gs-spring-boot-k8s
-    spec:
-      containers:
-      - image: spring-k8s/gs-spring-boot-k8s:snapshot
-        name: gs-spring-boot-k8s
-        resources: {}
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-        lifecycle:
-          preStop:
-            exec:
-              command: ["sh", "-c", "sleep 10"]
-        volumeMounts:
-          - name: config-volume
-            mountPath: /workspace/config
-      volumes:
-        - name: config-volume
-          configMap:
-            name: gs-spring-boot-k8s
-status: {}
-
+include::app/k8s/deployment.yaml[]
 ----
 
 With all of our best practices implemented, we can apply the new deployment to Kubernetes. This deploys another Pod and
@@ -491,38 +446,9 @@ all the pods.
 
 In your application, open `DemoApplication.java` in `src/main/java/com/example/demo`. Modify the code as follows:
 
-.DemoApplication.java
 [source,java]
 ----
-package com.example.demo;
-
-import reactor.core.publisher.Mono;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
-
-@SpringBootApplication
-@RestController
-public class DemoApplication {
-
-  private WebClient webClient = WebClient.builder().build();
-
-  public static void main(String[] args) {
-     SpringApplication.run(DemoApplication.class, args);
-  }
-
-  @GetMapping
-  public Mono<String> index() {
-     return webClient.get().uri("http://k8s-workshop-name-service").exchange().flatMap(clientResponse -> {
-        String host = clientResponse.headers().asHttpHeaders().get("k8s-host").get(0);
-        return clientResponse.bodyToMono(String.class).flatMap(name -> Mono.just("Hello " + name + " from " + host));
-     });
-  }
-}
-
+include::app/src/main/java/com/example/demo/DemoApplication.java[]
 ----
 
 Notice the URL in the `WebClient` request is `k8s-workshop-name-service`. That is the ID of our service in Kubernetes.
