@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RestController
 public class DemoApplication {
 
-	private WebClient webClient = WebClient.builder().build();
+	private WebClient webClient = WebClient.create();
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
