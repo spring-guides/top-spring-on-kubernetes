@@ -14,7 +14,7 @@ https://www.jrebel.com/blog/2020-java-technology-report[+++Spring and Spring Boo
 It is also increasingly clear that technologies such as Docker and Kubernetes
 https://tanzu.vmware.com/content/ebooks/state-of-spring-2020[+++play an important role in the Spring community+++].
 
-image:extracted-media/media/image1.png[image,width=624,height=440]
+https://github.com/spring-guides/top-spring-on-kubernetes/raw/master/extracted-media/media/image1.png[image,width=624,height=440]
 
 https://spring.io/guides/gs/spring-boot-docker/[+++Packing your Spring Boot app in a Docker container+++] and deploying
 that application to Kubernetes has been possible for a while now and took very little effort. Due to the
