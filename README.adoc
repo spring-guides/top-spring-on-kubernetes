@@ -509,3 +509,5 @@ that, no matter how you choose to run your application. Building cloud-native ap
 nothing more than creating an image that uses Spring Boot’s built-in image builder and taking advantage of the capabilities
 of the Kubernetes platform. In part two of our look at Spring Boot and Kubernetes, we will look at how Spring Cloud fits
 into this story.
+
+
