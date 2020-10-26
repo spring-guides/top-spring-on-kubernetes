@@ -14,7 +14,7 @@ https://www.jrebel.com/blog/2020-java-technology-report[+++Spring and Spring Boo
 It is also increasingly clear that technologies such as Docker and Kubernetes
 https://tanzu.vmware.com/content/ebooks/state-of-spring-2020[+++play an important role in the Spring community+++].
 
-https://github.com/spring-guides/top-spring-on-kubernetes/raw/master/extracted-media/media/image1.png[image,width=624,height=440]
+image::https://github.com/spring-guides/top-spring-on-kubernetes/raw/master/extracted-media/media/image1.png[image,624,440]
 
 https://spring.io/guides/gs/spring-boot-docker/[+++Packing your Spring Boot app in a Docker container+++] and deploying
 that application to Kubernetes has been possible for a while now and took very little effort. Due to the
@@ -509,5 +509,3 @@ that, no matter how you choose to run your application. Building cloud-native ap
 nothing more than creating an image that uses Spring Boot’s built-in image builder and taking advantage of the capabilities
 of the Kubernetes platform. In part two of our look at Spring Boot and Kubernetes, we will look at how Spring Cloud fits
 into this story.
-
-
