@@ -40,7 +40,7 @@ Create a directory for your application. Then run the following cURL command to 
 start.spring.io:
 
 ```
-$ curl https://start.spring.io/starter.tgz -d dependencies=webflux,actuator | tar -xzvf -
+$ curl https://start.spring.io/starter.tgz -d dependencies=webflux,actuator -d type=maven-project | tar -xzvf -
 ```
 
 Alternatively, https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.4.RELEASE&packaging=jar&jvmVersion=11&groupId=com.example&artifactId=demo&name=demo&description=Demo%20project%20for%20Spring%20Boot&packageName=com.example.demo&dependencies=webflux,actuator[+++click here+++]
