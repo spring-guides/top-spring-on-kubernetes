@@ -1,0 +1,32 @@
+name: CI Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Main Branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build Hello Spring K8S
+        working-directory: ./hello-spring-k8s
+        run: ./mvnw clean package
+
+      - name: Build Hello Caller
+        working-directory: ./hello-caller
+        run: ./mvnw clean package
