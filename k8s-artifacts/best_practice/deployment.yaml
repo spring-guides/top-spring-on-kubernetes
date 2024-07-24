@@ -30,9 +30,5 @@ spec:
           httpGet:
             path: /actuator/health/readiness
             port: 8080
-        lifecycle:
-          preStop:
-            exec:
-              command: [ "sh", "-c", "sleep 10" ]
 status: {}
 

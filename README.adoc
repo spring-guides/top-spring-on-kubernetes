@@ -212,13 +212,12 @@ Before moving on be sure to stop the `port-forward` command above.
 The solution to this section is defined in `k8s-artifacts/best_practice/*`.
 
 Our application runs on Kubernetes, but, in order for our application to run optimally, we recommend implementing
-several best practices:
+the best practices:
 
 1. https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.kubernetes-probes[+++Add readiness and liveness probes+++]
-2. https://docs.spring.io/spring-boot/how-to/deployment/cloud.html#howto.deployment.cloud.kubernetes.container-lifecycle[+++Wait for container lifecycle processes to finish+++]
-3. https://docs.spring.io/spring-boot/reference/web/graceful-shutdown.html#web.graceful-shutdown[+++Enable graceful shutdown+++]
+2. https://docs.spring.io/spring-boot/reference/web/graceful-shutdown.html#web.graceful-shutdown[+++Enable graceful shutdown+++]
 
-Open `deployment.yaml` in a text editor and add the readiness, liveness, and lifecycle properties to your file:
+Open `deployment.yaml` in a text editor and add the readiness, and liveness properties to your file:
 
 .k8s/deployment.yaml
 [source,yaml]
@@ -227,9 +226,8 @@ include::k8s-artifacts/best_practice/deployment.yaml[]
 
 ----
 
-This takes care of best practices 1 and 2.
-
-To address the third best practice, we need to add a property to our application configuration. Since we run our
+This will address the first best practice.
+Additionally, we need to add a property to our application configuration. Since we run our
 application on Kubernetes, we can take advantage of https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/[+++Kubernetes ConfigMaps+++]
 to externalize this property, as a good cloud developer should. We now take a look at how to do that.
 
