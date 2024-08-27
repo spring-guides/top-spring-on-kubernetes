@@ -18,9 +18,10 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
+	// tag::caller-endpoint[]
 	@GetMapping
 	public Mono<String> index() {
-		return webClient.get().uri("http://k8s-workshop-name-service")
+		return webClient.get().uri("http://gs-spring-boot-k8s/name")
 				.retrieve()
 				.toEntity(String.class)
 				.map(entity -> {
@@ -29,4 +30,5 @@ public class DemoApplication {
 				});
 
 	}
+	// end::caller-endpoint[]
 }

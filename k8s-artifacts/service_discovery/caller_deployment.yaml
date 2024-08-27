@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: gs-hello-caller
+  name: gs-hello-caller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gs-hello-caller
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gs-hello-caller
+    spec:
+      containers:
+      - image: spring-k8s/hello-caller
+        imagePullPolicy: Never
+        name: hello-caller
+        resources: {}
+status: {}
+

@@ -5,76 +5,82 @@ projects: [spring-boot]
 :toc:
 :icons: font
 :source-highlighter: prettify
-:project_id: draft-top-template
+:project_id: top-spring-on-kubernetes
 
-= Spring On Kubernetes: Getting Started
+== What You Will Build
 
-When it comes to building Java apps that run in the cloud,
-https://www.jrebel.com/blog/2020-java-technology-report[+++Spring and Spring Boot are clear favorites+++].
-It is also increasingly clear that technologies such as Docker and Kubernetes
-https://tanzu.vmware.com/content/ebooks/state-of-spring-2020[+++play an important role in the Spring community+++].
+Kubernetes in Spring environments is maturing.
+According to the https://spring.io/blog/2024/06/03/state-of-spring-survey-2024-results[2024 State of Spring Survey], 65% of respondents are using Kubernetes in their Spring environment.
 
-image::https://github.com/spring-guides/top-spring-on-kubernetes/raw/master/extracted-media/media/image1.png[image,624,440]
-
-https://spring.io/guides/gs/spring-boot-docker/[+++Packing your Spring Boot app in a Docker container+++] and deploying
-that application to Kubernetes has been possible for a while now and took very little effort. Due to the
-“make jar not war” motto, all that was required to containerize a Spring Boot app was a container with a JRE to run
-the jar. Once you had a Docker container, running the containerized Spring Boot application in Kubernetes was just a
-matter of running the container.
-
-That said, as more and more of you deployed Spring Boot applications to Kubernetes, it became clear we could do better.
-To that end, we have https://docs.spring.io/spring-boot/docs/current/reference/html/deployment.html#cloud-deployment-kubernetes[+++made several enhancements in Spring Boot 2.3+++]
-and are https://spring.io/blog/2020/08/14/config-file-processing-in-spring-boot-2-4[+++making even more in the forthcoming Spring Boot 2.4 release+++]
-to make running Spring Boot on Kubernetes an even better experience.
+Before you can run a Spring Boot application on Kubernetes, you first must generate a container image.
+Spring Boot supports using https://docs.spring.io/spring-boot/reference/packaging/container-images/cloud-native-buildpacks.html#packaging.container-images.buildpacks[Cloud Native Buildpacks] to easily generate a Docker image from your Maven or Gradle plugin.
 
 The goal of this guide is to show you how you can run a Spring Boot application on Kubernetes and take advantage of
 several of the platform features that let you build cloud-native applications.
 
-== Getting Started: start.spring.io
+In this guide you will build two Spring Boot web applications.
+You will package each web application into a Docker image using Cloud Native Buildpacks, create a kubernetes deployment based on that image, and create a service for access to the deployment.
 
-So what do you need to get started running a Spring Boot app on Kubernetes?
+== What You Need
 
-Nothing more than a quick trip to “everyone’s favorite place on the internet: http://start.spring.io[+++start.spring.io+++]”.
+* A favorite text editor or IDE
+* https://www.oracle.com/java/technologies/downloads/[Java 17^] or later
+* A Docker environment
+* A Kubernetes environment
 
-Create a directory for your application. Then run the following cURL command to generate an application from
-start.spring.io:
+NOTE: https://www.docker.com/products/docker-desktop/[Docker Desktop] provides both the Docker and Kubernetes environments necessary to follow along in this guide.
+
+== How to Complete This Guide
+
+This guide focuses on creating the necessary artifacts to run Spring Boot apps on kubernetes.
+As such, the best way to follow along is to use the code provided in https://github.com/spring-guides/{project_id}[this repository^].
+
+This repository provides two services that we will use:
+
+* `hello-spring-k8s` is a basic Spring Boot REST application that will echo a Hello World message.
+* `hello-caller` will call the Spring Boot REST application `hello-spring-k8s`. The `hello-caller` service is to demonstrate how service discovery works in a kubernetes environment.
+
+Both of these applications are Spring Boot REST applications and can be created from scratch using https://spring.io/guides/gs/rest-service[this guide]. The code specific to this guide is called out below as the lessons progress.
+
+This guide is separated into distinct sections.
+
+* <<_deploying_to_kubernetes, Basic Deployment>>
+* <<_best_practices, Best practices>>
+* <<_using_configmaps_to_externalize_configuration, External configuration>>
+* <<_service_discovery_and_load_balancing, Service discovery>>
+
+In the solution repository, you will find the kubernetes artifacts have already been created. This guide walks you through creating these objects step by step, but you can refer to the solutions at any time for a working example.
+
+== Generate a Docker Image
+
+First, generate a Docker Image of the `hello-spring-k8s` project using https://docs.spring.io/spring-boot/reference/packaging/container-images/cloud-native-buildpacks.html#packaging.container-images.buildpacks[Cloud Native Buildpacks].
+In the `hello-spring-k8s` directory, run the command:
 
 ```
-$ curl https://start.spring.io/starter.tgz -d dependencies=webflux,actuator | tar -xzvf -
+$ ./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=spring-k8s/hello-spring-k8s
 ```
 
-Alternatively, https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.4.RELEASE&packaging=jar&jvmVersion=11&groupId=com.example&artifactId=demo&name=demo&description=Demo%20project%20for%20Spring%20Boot&packageName=com.example.demo&dependencies=webflux,actuator[+++click here+++]
-to open start.spring.io with the correct configuration and click Generate to download the project.
-
-With a basic Spring Boot web application, we now need to create a Docker container. With Spring Boot 2.3, we can use
-the Spring Boot Maven or Gradle plugin to do this for us, without us needing to modify the application. In order for
-the build image plugin to work you will need to have https://docs.docker.com/get-docker/[+++Docker installed locally+++].
-
-```
-$ ./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=spring-k8s/gs-spring-boot-k8s
-```
-
+This will generate a Docker Image with the name `spring-k8s/hello-spring-k8s`.
 After the build finishes, we should now have a Docker image for our application, which we can check with the
 following command:
 
 ```
-$ docker images spring-k8s/gs-spring-boot-k8s
+$ docker images spring-k8s/hello-spring-k8s
 
-REPOSITORY                      TAG                 IMAGE ID            CREATED             SIZE
-spring-k8s/gs-spring-boot-k8s   latest              21f21558c005        40 years ago        257MB
-
+REPOSITORY                    TAG       IMAGE ID       CREATED        SIZE
+spring-k8s/hello-spring-k8s   latest    <ID>        44 years ago   325MB
 ```
 
 Now we can start the container image and make sure it works:
 
 ```
-$ docker run -p 8080:8080 --name gs-spring-boot-k8s -t spring-k8s/gs-spring-boot-k8s
+$ docker run -p 8080:8080 --name hello-spring-k8s -t spring-k8s/hello-spring-k8s
 ```
 
 We can test that everything is working by making an HTTP request to the actuator/health endpoint:
 
 ```
-$ curl http://localhost:8080/actuator/health; echo
+$ curl http://localhost:8080/actuator/health
 
 {"status":"UP"}
 ```
@@ -82,10 +88,10 @@ $ curl http://localhost:8080/actuator/health; echo
 Before moving on be sure to stop the running container.
 
 ```
-$ docker stop gs-spring-boot-k8s
+$ docker stop hello-spring-k8s
 ```
 
-== On To Kubernetes
+== Kubernetes Requirements
 
 With a container image for our application (with nothing more than a visit to start.spring.io!) we are ready to get
 our application running on Kubernetes. To do this, we need two things:
@@ -96,66 +102,62 @@ our application running on Kubernetes. To do this, we need two things:
 Follow these https://kubernetes.io/docs/tasks/tools/install-kubectl/[+++instructions+++] to install the Kubernetes CLI.
 
 Any Kubernetes cluster can work, but, for the purpose of this post, we spin one up locally to make it as simple
-as possible. The easiest way to run a Kubernetes cluster locally is with a tool called https://kind.sigs.k8s.io/[+++Kind+++].
-Follow these https://kind.sigs.k8s.io/docs/user/quick-start/#installation[+++instructions+++] to install Kind. With Kind
-installed, we can now create a cluster.
+as possible. The easiest way to run a Kubernetes cluster locally is with https://www.docker.com/products/docker-desktop/[Docker Desktop].
 
-```
-$ kind create cluster
-```
+There are some common kubernetes flags used throughout the tutorial that are worth noting.
+The `--dry-run=client` flag tells kubernetes to only print the object that would be sent, without sending it.
+The `-o yaml` flag specifies that the output of the command should be yaml.
+These two flags are used in conjunction with the output redirection `>` so that the kubernetes commands can be captured in a file.
+This is useful for editing objects prior to creation as well as creating a repeatable process.
 
-After Kind creates the cluster, it automatically configures the Kubernetes CLI to point at that cluster. To make sure
-everything is setup properly, run:
+[#_deploying_to_kubernetes]
+== Deploying To Kubernetes
 
-```
-$ kubectl cluster-info
-```
+The solution to this section is defined in `k8s-artifacts/basic/*`.
 
-If you do not see any errors, you are ready to deploy your application to Kubernetes.
-
-=== Deploying To Kubernetes
-
-To deploy our application to Kubernetes, we need to generate some YAML that Kubernetes can use to deploy, run, and
+To deploy our `hello-spring-k8s` application to Kubernetes, we need to generate some YAML that Kubernetes can use to deploy, run, and
 manage our application as well as expose that application to the rest of the cluster.
 
-First create a directory for our YAML:
+If you are choosing to build the yaml yourself instead of running the provided solution, first create a directory for your YAML.
+It does not matter where this folder resides, as the yaml files we generate will not be dependent on the path.
 
 ```
 $ mkdir k8s
+$ cd k8s
 ```
 
 Now we can use kubectl to generate the basic YAML we need:
 
 ```
-$ kubectl create deployment gs-spring-boot-k8s --image spring-k8s/gs-spring-boot-k8s:snapshot -o yaml --dry-run=client > k8s/deployment.yaml
+$ kubectl create deployment gs-spring-boot-k8s --image spring-k8s/gs-spring-boot-k8s:snapshot -o yaml --dry-run=client > deployment.yaml
 ```
+
+Because the image we are using is local, we need to change the https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy[`imagePullPolicy`] for the container in our deployment.
+The `containers:` spec of the yaml should now be:
+```
+    spec:
+      containers:
+      - image: spring-k8s/hello-spring-k8s
+        imagePullPolicy: Never
+        name: hello-spring-k8s
+        resources: {}
+```
+
+If you attempt to run the deployment without modifying the `imagePullPolicy`, your pod will have a status of `ErrImagePull`.
 
 The `deployment.yaml` file tells Kubernetes how to deploy and manage our application, but it does not let our
 application be a network service to other applications. To do that, we need a service resource. Kubectl can help us
 generate the YAML for the service resource:
 
 ```
-$ kubectl create service clusterip gs-spring-boot-k8s --tcp 80:8080 -o yaml --dry-run=client > k8s/service.yaml
+$ kubectl create service clusterip gs-spring-boot-k8s --tcp 80:8080 -o yaml --dry-run=client > service.yaml
 ```
-
-Before applying these YAML files to our Kubernetes cluster, we need to load our Docker image into the Kind cluster.
-If we do not do this, Kubernetes tries to find the container for our image in Docker Hub, which, of course, does not
-exist.
-
-```
-$ docker tag spring-k8s/gs-spring-boot-k8s spring-k8s/gs-spring-boot-k8s:snapshot
-
-$ kind load docker-image spring-k8s/gs-spring-boot-k8s:snapshot
-```
-
-NOTE: We create a new tag for the image, because the default Kubernetes pull policy for images using the latest tag is
-`Always`. Since the image does not exist externally in a Docker repository, we want to use an image pull policy of
-`Never` or `IfNotPresent`. When a tag other than latest is used, the default Kubernetes pull policy is `IfNotPresent`.
 
 Now we are ready to apply the YAML files to Kubernetes:
 
 ```
-$ kubectl apply -f ./k8s
+$ kubectl apply -f deployment.yaml
+$ kubectl apply -f service.yaml
 ```
 
 Then you can run:
@@ -194,115 +196,65 @@ With the port-forward command running, we can now make an HTTP request to localh
 service running in Kubernetes:
 
 ```
-$ curl http://localhost:9090/actuator; echo
+$ curl http://localhost:9090/helloWorld
 ```
 
 [source,json]
 ----
-{
-   "_links":{
-      "self":{
-         "href":"http://localhost:9090/actuator",
-         "templated":false
-      },
-      "health-path":{
-         "href":"http://localhost:9090/actuator/health/{*path}",
-         "templated":true
-      },
-      "health":{
-         "href":"http://localhost:9090/actuator/health",
-         "templated":false
-      },
-      "info":{
-         "href":"http://localhost:9090/actuator/info",
-         "templated":false
-      }
-   }
-}
+Hello World!!
 ----
 
 Before moving on be sure to stop the `port-forward` command above.
 
-=== Best Practices
+[#_best_practices]
+== Best Practices
+
+The solution to this section is defined in `k8s-artifacts/best_practice/*`.
 
 Our application runs on Kubernetes, but, in order for our application to run optimally, we recommend implementing
-several best practices:
+the best practices:
 
-1. https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-kubernetes-probes[+++Add readiness and liveness probes+++]
-2. https://docs.spring.io/spring-boot/docs/current/reference/html/deployment.html#cloud-deployment-kubernetes-container-lifecycle[+++Wait for container lifecycle processes to finish+++]
-3. https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown[+++Enable graceful shutdown+++]
+1. https://docs.spring.io/spring-boot/reference/actuator/endpoints.html#actuator.endpoints.kubernetes-probes[+++Add readiness and liveness probes+++]
+2. https://docs.spring.io/spring-boot/reference/web/graceful-shutdown.html#web.graceful-shutdown[+++Enable graceful shutdown+++]
 
-
-Open `k8s/deployment.yaml` in a text editor and add the readiness, liveness, and lifecycle properties to your file:
+Open `deployment.yaml` in a text editor and add the readiness, and liveness properties to your file:
 
 .k8s/deployment.yaml
 [source,yaml]
 ----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  creationTimestamp: null
-  labels:
-    app: gs-spring-boot-k8s
-  name: gs-spring-boot-k8s
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: gs-spring-boot-k8s
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        app: gs-spring-boot-k8s
-    spec:
-      containers:
-      - image: spring-k8s/gs-spring-boot-k8s:snapshot
-        name: gs-spring-boot-k8s
-        resources: {}
-        livenessProbe:
-          httpGet:
-            path: /actuator/health/liveness
-            port: 8080
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-        lifecycle:
-          preStop:
-            exec:
-              command: ["sh", "-c", "sleep 10"]
-status: {}
+include::k8s-artifacts/best_practice/deployment.yaml[]
 
 ----
 
-This takes care of best practices 1 and 2.
-
-To address the third best practice, we need to add a property to our application configuration. Since we run our
+This will address the first best practice.
+Additionally, we need to add a property to our application configuration. Since we run our
 application on Kubernetes, we can take advantage of https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/[+++Kubernetes ConfigMaps+++]
 to externalize this property, as a good cloud developer should. We now take a look at how to do that.
 
-=== Using ConfigMaps To Externalize Configuration
+== Using ConfigMaps To Externalize Configuration
 
-To enable graceful shutdown in a Spring Boot application, we need to set `server.shutdown=graceful`.
+The solution to this section is defined in `k8s-artifacts/config_map/*`.
+
+To enable graceful shutdown in a Spring Boot application, we could set `server.shutdown=graceful` in `application.properties`.
+Rather than adding this line directly to our code, let's use a https://kubernetes.io/docs/concepts/configuration/configmap/[ConfigMap].
+We can use the Actuator endpoints as a way of verifying that our application is adding the properties file from our ConfigMap to the list of PropertySources.
 
 We can create a properties file that enables graceful shutdown and also exposes all of the Actuator endpoints. We can
 use the Actuator endpoints as a way of verifying that our application is adding the properties file from our ConfigMap
 to the list of PropertySources.
 
-Create a new file called `application.properties` in the `k8s` directory. In that file add the following properties.
+Create a new file called `application.properties` where you are keeping your yaml files. In that file add the following properties.
 
 .application.properties
 [source,properties]
 ----
-include::app/k8s/application.properties[]
+include::k8s-artifacts/config_map/application.properties[]
 ----
 
 Alternatively you can do this in one easy step from the command line by running the following command.
 
 ```
-$ cat <<EOF >./k8s/application.properties
+$ cat <<EOF >./application.properties
 server.shutdown=graceful
 management.endpoints.web.exposure.include=*
 EOF
@@ -312,7 +264,7 @@ With our properties file created, we can now https://kubernetes.io/docs/tasks/co
 with kubectl.
 
 ```
-$ kubectl create configmap gs-spring-boot-k8s --from-file=./k8s/application.properties
+$ kubectl create configmap gs-spring-boot-k8s --from-file=./application.properties
 ```
 
 With our ConfigMap created, we can see what it looks like:
@@ -346,14 +298,14 @@ To do this, we need to modify our deployment YAML to first create the volume and
 .k8s/deployment.yaml
 [source,yaml]
 ----
-include::app/k8s/deployment.yaml[]
+include::k8s-artifacts/config_map/deployment.yaml[]
 ----
 
 With all of our best practices implemented, we can apply the new deployment to Kubernetes. This deploys another Pod and
 stops the old one (as long as the new one starts successfully).
 
 ```
-$ kubectl apply -f ./k8s
+$ kubectl apply -f deployment.yaml
 ```
 
 If your liveness and readiness probes are configured correctly, the Pod starts successfully and transitions to a ready
@@ -370,6 +322,10 @@ $ kubectl port-forward svc/gs-spring-boot-k8s 9090:80
 
 Now if you visit http://localhost:9090/actuator/env[+++http://localhost:9090/actuator/env+++] you will see property
 sources contributed from our mounted volume.
+
+```
+curl http://localhost:9090/actuator/env | jq
+```
 
 [source,json]
 ----
@@ -390,122 +346,119 @@ sources contributed from our mounted volume.
 
 Before continuing, be sure to stop the `port-forward` command.
 
-=== Service Discovery and Load Balancing
+== Service Discovery and Load Balancing
 
-For this part of the guide, you should install https://kustomize.io/[+++Kustomize+++]. Kustomize is a useful tool when
-working with Kubernetes and targeting different environments (dev, test, staging, production). We use it to generate
-YAML to deploy another application to Kubernetes that we will then be able to call using service discovery.
+This part of the guide adds the `hello-caller` application.
+The solution to this section is defined in `k8s-artifacts/service_discovery/*`.
 
-Run the following command to deploy an instance of the https://github.com/ryanjbaxter/k8s-spring-workshop/tree/master/name-service[+++name-service+++]:
-
-```
-$ kustomize build "github.com/ryanjbaxter/k8s-spring-workshop/name-service/kustomize/multi-replica/" | kubectl apply -f -
-```
-
-This should deploy the `name-service` to your Kubernetes cluster. The deployment should create two replicas for the
-`name-service`:
+To demonstrate load balancing, let's first scale our existing `hello-spring-k8s` service to 3 replicas.
+This can be done by adding the `replicas` configuration to your deployment.
 
 ```
-$ kubectl get pods --selector app=k8s-workshop-name-service
+...
+metadata:
+  creationTimestamp: null
+  labels:
+    app: gs-spring-boot-k8s
+  name: gs-spring-boot-k8s
+spec:
+  replicas: 3
+  selector:
+...
+```
 
-NAME                                         READY   STATUS    RESTARTS   AGE
-k8s-workshop-name-service-56b986b664-6qt59   1/1     Running   0          7m26s
-k8s-workshop-name-service-56b986b664-wjcr9   1/1     Running   0          7m26s
+Update the deployment by running the command:
+
+```
+kubectl apply -f deployment.yaml
+```
+
+Now we should see 3 pods running:
+
+```
+$ kubectl get pod --selector=app=gs-spring-boot-k8s
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+gs-spring-boot-k8s-76477c6c99-2psl4   1/1     Running   0          15m
+gs-spring-boot-k8s-76477c6c99-ss6jt   1/1     Running   0          3m28s
+gs-spring-boot-k8s-76477c6c99-wjbhr   1/1     Running   0          3m28s
 
 ```
 
-To demonstrate what this service does, we can make a request to it:
+We need to run a second service for this section, so let's turn our attention to `hello-caller`.
+This application has a single endpoint that in turn calls `hello-spring-k8s`.
+Note that the URL is the same as the service name in kubernetes.
 
 ```
-$ kubectl port-forward svc/k8s-workshop-name-service 9090:80
+include::hello-caller/src/main/java/com/example/demo/DemoApplication.java[tag=caller-endpoint]
+```
+
+Kubernetes sets up DNS entries so that we can use the service ID for the `hello-spring-k8s` to make an HTTP request to the
+service without knowing the IP address of the pods. The Kubernetes service also load balances these requests between
+all the pods.
+
+We now need to package the `hello-caller` application as a Docker image and run it as a kubernetes resource.
+To generate a Docker image we will once again use https://docs.spring.io/spring-boot/reference/packaging/container-images/cloud-native-buildpacks.html#packaging.container-images.buildpacks[Cloud Native Buildpacks].
+In the `hello-caller` folder, run the command:
+
+```
+./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=spring-k8s/hello-caller
+```
+
+When the Docker image is created, you can create a new deployment similar to the one that we have already seen.
+A completed configuration is provided in the `caller_deployment.yaml` file. Run this file:
+
+```
+kubectl apply -f caller_deployment.yaml
+```
+
+
+We can verify that the app is running with the command:
+
+```
+$ kubectl get pod --selector=app=gs-hello-caller
+
+NAME                               READY   STATUS    RESTARTS   AGE
+gs-hello-caller-774469758b-qdtsx   1/1     Running   0          2m34s
+
+```
+
+We also need to create a service, as defined in the provided file `caller_service.yaml`.
+This file can be run with the command:
+
+```
+kubectl apply -f caller_service.yaml
+```
+
+Now that you have two deployments and two services running, you are ready to test the application.
+
+```
+$ kubectl port-forward svc/gs-hello-caller 9090:80
 
 $ curl http://localhost:9090 -i; echo
 
 HTTP/1.1 200
-k8s-host: k8s-workshop-name-service-56b986b664-6qt59
 Content-Type: text/plain;charset=UTF-8
 Content-Length: 4
 Date: Mon, 14 Sep 2020 15:37:51 GMT
 
-Paul
+Hello Paul from gs-spring-boot-k8s-76477c6c99-5xdq8
 ```
 
-If you make multiple requests, you should see different names returned. Also note the header: `k8s-host`. This should
-align with the ID of the pod servicing the request.
-
-NOTE: When using the port-forwarding command, it makes only a request to a single pod, so you will only see one host
-in the response.
-
-Be sure to stop the `port-forward` command before moving on.
-
-With our service running, we can modify our application to make a request to the `name-service`.
-
-Kubernetes sets up DNS entries so that we can use the service ID for the `name-service` to make an HTTP request to the
-service without knowing the IP address of the pods. The Kubernetes service also load balances these requests between
-all the pods.
-
-In your application, open `DemoApplication.java` in `src/main/java/com/example/demo`. Modify the code as follows:
-
-[source,java]
-----
-include::app/src/main/java/com/example/demo/DemoApplication.java[]
-----
-
-Notice the URL in the `WebClient` request is `k8s-workshop-name-service`. That is the ID of our service in Kubernetes.
-
-Since we updated the application code, we need to build a new image and deploy it to Kubernetes:
+If you make multiple requests, you should see different names returned.
+The pod name is also listed in the request.
+This value will also change if you submit multiple requests.
+While waiting for the kubernetes load balancer to select a different pod, you can speed up the process by deleting the pod that returned the most recent request.
 
 ```
-$ ./mvnw clean spring-boot:build-image -Dspring-boot.build-image.imageName=spring-k8s/gs-spring-boot-k8s
-
-$ docker tag spring-k8s/gs-spring-boot-k8s:latest spring-k8s/gs-spring-boot-k8s:snapshot
-
-$ kind load docker-image spring-k8s/gs-spring-boot-k8s:snapshot
+$ kubectl delete pod gs-spring-boot-k8s-76477c6c99-5xdq8
 ```
 
-An easy way to deploy the new image is to delete the application pod. Kubernetes automatically creates another pod with
-the new image we just loaded into the cluster.
 
-```
-$ kubectl delete pod --selector app=gs-spring-boot-k8s
-```
-
-Once the new pod is up and running, you can port forward requests to the service:
-
-```
-$ kubectl port-forward svc/gs-spring-boot-k8s 9090:80
-```
-
-Now, if you make a request to the service, you should see which pod of the name-service the request was sent to:
-
-```
-$ curl http://localhost:9090; echo
-
-Hello Paul from k8s-workshop-name-service-56b986b664-wjcr9
-```
-
-Verifying load balancing can be a bit more challenging. You can continually make the same cURL request and watch to see
-if the pod ID changes. A tool such as watch can be quite useful for this:
-
-```
-$ watch -n 1 curl http://localhost:9090
-```
-
-The watch command makes the cURL request every second. The downside is that you have to watch your terminal and wait.
-Eventually, though, you should notice the pod ID change.
-
-A quicker way to see things switch is to run the watch command and then delete the pod that is currently servicing
-requests:
-
-```
-$ kubectl delete pod k8s-workshop-name-service-56b986b664-wjcr9
-```
-
-When you do this, you should immediately notice the pod ID change in the watch command.
+== Summary
 
 Getting a Spring Boot application running on Kubernetes requires nothing more than a visit to http://start.spring.io[start.spring.io]. The goal
 of Spring Boot has always been to make building and running Java applications as easy as possible, and we try to enable
 that, no matter how you choose to run your application. Building cloud-native applications with Kubernetes involves
 nothing more than creating an image that uses Spring Boot’s built-in image builder and taking advantage of the capabilities
-of the Kubernetes platform. In part two of our look at Spring Boot and Kubernetes, we will look at how Spring Cloud fits
-into this story.
+of the Kubernetes platform.
