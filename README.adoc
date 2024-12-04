@@ -129,7 +129,7 @@ $ cd k8s
 Now we can use kubectl to generate the basic YAML we need:
 
 ```
-$ kubectl create deployment gs-spring-boot-k8s --image spring-k8s/gs-spring-boot-k8s:snapshot -o yaml --dry-run=client > deployment.yaml
+$ kubectl create deployment gs-spring-boot-k8s --image spring-k8s/spring-k8s/hello-spring-k8s:latest -o yaml --dry-run=client > deployment.yaml
 ```
 
 Because the image we are using is local, we need to change the https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy[`imagePullPolicy`] for the container in our deployment.
